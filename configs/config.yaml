@@ -1,0 +1,44 @@
+server:
+  name: oms-service
+  port: ":8002"
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 70s
+
+interservice_client:
+   serviceName: ims-service
+   baseURL:     http://localhost:8000
+   timeout:     5s
+
+aws:
+  region: "us-east-1"
+  public_bucket: "oms-temp-public"
+  private_bucket: "oms-private"
+  localstack_endpoint: "http://localhost:4566" 
+
+mongodb:
+  uri: "mongodb://localhost:27017"
+  database: "oms"
+  orders_collection: "orders"
+  retries: 3
+  timeout: 5s
+kafka:
+  brokers:
+    - 127.0.0.1:9092
+
+  group_id: "oms-service"
+  topics:
+    order_created: "order.created"
+
+
+sqs:
+  endpoint:          http://localhost:4566
+  account:           "000000000000"
+  bulkOrderQueueUrl: http://localhost:4566/000000000000/CreateBulkOrderQueue
+  consumer:
+    workerCount:         1
+    concurrencyPerWorker: 1
+    batchSize:           1
+    visibilityTimeout:   30
+inventory:
+  service_url: http://inventory-service:8000

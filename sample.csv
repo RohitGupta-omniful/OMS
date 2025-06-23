@@ -1,0 +1,4 @@
+order_id,customer_name,hub_id,sku_id,quantity,price
+ORD-1001,John Doe,3fa85f64-5717-4562-b3fc-2c963f66afa6,4fa85f64-5717-4562-b3fc-2c963f66afa6,2,500
+ORD-1002,Jane Smith,3fa85f64-5717-4562-b3fc-2c963f66afa7,5fa85f64-5717-4562-b3fc-2c963f66afa6,1,300
+ORD-1003,Alice Brown,3fa85f64-5717-4562-b3fc-2c963f66afa8,3fb85f64-5717-4562-b3fc-2c963f66afa6,4,1200
