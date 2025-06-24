@@ -2,10 +2,9 @@ package SQS
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/omniful/go_commons/config"
+	"github.com/omniful/go_commons/log"
 	"github.com/omniful/go_commons/sqs"
 )
 
@@ -17,13 +16,12 @@ func PublishCreateBulkOrderEvent(ctx context.Context) (*sqs.Publisher, error) {
 	}
 
 	queueName := "CreateBulkOrderQueue"
-	fmt.Println("here")
 	queue, err := sqs.NewStandardQueue(ctx, queueName, sqsCfg)
 	if err != nil {
-		log.Printf("NewBulkOrderPublisher: NewStandardQueue error: %v", err)
+		log.Errorf("NewBulkOrderPublisher: NewStandardQueue error: %v", err)
 		return nil, err
 	}
 
-	fmt.Println("SQS queue publisher ready!")
+	log.Infof("SQS queue publisher ready")
 	return sqs.NewPublisher(queue), nil
 }

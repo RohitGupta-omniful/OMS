@@ -2,12 +2,11 @@ package IMS_APIS
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/omniful/go_commons/config"
 	"github.com/omniful/go_commons/http"
 	interservice_client "github.com/omniful/go_commons/interservice-client"
+	"github.com/omniful/go_commons/log"
 )
 
 var imsClient *interservice_client.Client
@@ -23,7 +22,8 @@ func InitIMSClient(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Connected to INTER_SERVICE Client")
+
+	log.Infof("Connected to INTER_SERVICE Client")
 	SetIMSClient(client)
 	return nil
 }
@@ -42,12 +42,11 @@ func ValidateHub(hubID string) bool {
 	}
 
 	req := &http.Request{
-		Url: fmt.Sprintf("/validate/hub/%s", hubID),
+		Url: "/validate/hub/" + hubID,
 	}
-	fmt.Println("above")
+
 	var result ValidationResponse
 	_, err := imsClient.Get(req, &result)
-	fmt.Println("checked")
 	return err == nil && result.IsValid
 }
 
@@ -57,7 +56,7 @@ func ValidateSKUOnHub(skuID string) bool {
 	}
 
 	req := &http.Request{
-		Url: fmt.Sprintf("/validate/sku/%s", skuID),
+		Url: "/validate/sku/" + skuID,
 	}
 
 	var result ValidationResponse
