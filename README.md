@@ -99,7 +99,7 @@ This project processes order data from CSV files uploaded to S3 and integrates w
 
 ### 5. **Order Creation**
 - If the row is valid:
-  - An order is inserted into MongoDB with status `"onHold"`.
+  - An order is inserted into MongoDB with status `"on_hold"`.
   - An event is published to the Kafka topic: `order.created`.
 
 - If the row is invalid:
