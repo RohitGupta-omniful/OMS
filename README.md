@@ -52,6 +52,91 @@ All APIs require an authorization header:
 ```
 Authorization: Bearer secret-token
 ```
+## Project Workflow
+
+This project processes order data from CSV files uploaded to S3 and integrates with SQS, Kafka, MongoDB, and an internal IMS (Inventory Management System) for full order lifecycle management.
+
+---
+
+### 1. **CSV Upload via API**
+- User sends a POST request to `POST /api/orders/upload`.
+- The request includes a JSON body with the S3 path of the uploaded CSV.
+- Middleware handles:
+  - Authorization using a Bearer token.
+  - Request logging.
+  - i18n support for standardized messaging.
+
+---
+
+### 2. **CSV Validation**
+- The service fetches the CSV file from the given S3 path.
+- Parses and validates:
+  - Structure (columns like `hub_id`, `sku_id`, `quantity`).
+  - Data types and required fields.
+- Valid and invalid rows are separated:
+  - Valid rows → sent for further processing.
+  - Invalid rows → written to a new CSV and uploaded back to S3.
+
+---
+
+### 3. **SQS Message Publishing**
+- If CSV validation succeeds, a message with S3 file metadata is published to the AWS SQS queue: `CreateBulkOrderQueue`.
+- Response to user confirms:
+  - Queue message published.
+  - Path of the file processed.
+
+---
+
+### 4. **SQS Consumer (Worker)**
+- A worker service listens to the `CreateBulkOrderQueue`.
+- For each received message:
+  - Downloads and parses the CSV file from S3.
+  - Iterates through each row to:
+    - Extract `hub_id`, `sku_id`, `quantity`.
+    - Call IMS API to validate `hub_id` and `sku_id`.
+
+---
+
+### 5. **Order Creation**
+- If the row is valid:
+  - An order is inserted into MongoDB with status `"onHold"`.
+  - An event is published to the Kafka topic: `order.created`.
+
+- If the row is invalid:
+  - It’s ignored or added to a separate invalid file for auditing.
+
+---
+
+### 6. **Kafka Consumer (Order Finalization)**
+- Another service listens to `order.created` Kafka events.
+- For each event:
+  - Calls IMS again to check inventory availability.
+  - If sufficient:
+    - IMS reserves/deducts inventory.
+    - Order status in MongoDB is updated to `"new_Order"`.
+  - If insufficient:
+    - Order remains `"on_hold"` or flagged for manual review.
+
+---
+
+### 7. **Invalid Order Handling**
+- Invalid rows are exported to a CSV.
+- This CSV is uploaded to the `/public/` directory in S3.
+- Can be downloaded later by the user for correction and re-upload.
+
+---
+
+### Summary of Services
+
+| Component        | Purpose |
+|------------------|---------|
+| **API Layer**    | Accept CSV path, validate headers, initiate workflow. |
+| **S3**           | Stores input and output CSV files. |
+| **SQS**          | Manages decoupled communication between CSV ingestion and processing services. |
+| **Worker**       | Consumes messages, validates rows, interacts with IMS. |
+| **IMS APIs**     | Validate hub/sku and check inventory levels. |
+| **Kafka**        | Publishes `order.created` events for inventory management. |
+| **MongoDB**      | Stores and tracks the status of each order. |
 
 ---
 
