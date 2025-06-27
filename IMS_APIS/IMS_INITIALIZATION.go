@@ -2,14 +2,17 @@ package IMS_APIS
 
 import (
 	"context"
+	"errors"
 
 	"github.com/omniful/go_commons/config"
 	"github.com/omniful/go_commons/http"
+	"github.com/omniful/go_commons/i18n"
 	interservice_client "github.com/omniful/go_commons/interservice-client"
 	"github.com/omniful/go_commons/log"
 )
 
 var imsClient *interservice_client.Client
+var authToken string
 
 func InitIMSClient(ctx context.Context) error {
 	configIMS := interservice_client.Config{
@@ -23,7 +26,12 @@ func InitIMSClient(ctx context.Context) error {
 		return err
 	}
 
-	log.Infof("Connected to INTER_SERVICE Client")
+	authToken = "my-secret-token"
+	if authToken == "" {
+		return errors.New(i18n.Translate(ctx, "IMS auth token is not set"))
+	}
+
+	log.Infof(i18n.Translate(ctx, "Connected to INTER_SERVICE Client"))
 	SetIMSClient(client)
 	return nil
 }
@@ -36,30 +44,44 @@ type ValidationResponse struct {
 	IsValid bool `json:"is_valid"`
 }
 
-func ValidateHub(hubID string) bool {
+func ValidateHub(ctx context.Context, hubID string) bool {
 	if imsClient == nil {
+		log.Error(i18n.Translate(ctx, "IMS client is not initialized"))
 		return false
 	}
 
 	req := &http.Request{
-		Url: "/validate/hub/" + hubID,
+		Url:     "/validate/hub/" + hubID,
+		Headers: map[string][]string{"Authorization": {"Bearer " + authToken}},
 	}
 
 	var result ValidationResponse
 	_, err := imsClient.Get(req, &result)
-	return err == nil && result.IsValid
+	if err != nil {
+		log.Errorf(i18n.Translate(ctx, "Error validating hubID %s: %v"), hubID, err)
+		return false
+	}
+
+	return result.IsValid
 }
 
-func ValidateSKUOnHub(skuID string) bool {
+func ValidateSKUOnHub(ctx context.Context, skuID string) bool {
 	if imsClient == nil {
+		log.Error(i18n.Translate(ctx, "IMS client is not initialized"))
 		return false
 	}
 
 	req := &http.Request{
-		Url: "/validate/sku/" + skuID,
+		Url:     "/validate/sku/" + skuID,
+		Headers: map[string][]string{"Authorization": {"Bearer " + authToken}},
 	}
 
 	var result ValidationResponse
 	_, err := imsClient.Get(req, &result)
-	return err == nil && result.IsValid
+	if err != nil {
+		log.Errorf(i18n.Translate(ctx, "Error validating SKU %s: %v"), skuID, err)
+		return false
+	}
+
+	return result.IsValid
 }

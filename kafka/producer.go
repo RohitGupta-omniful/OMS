@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/omniful/go_commons/i18n"
 	"github.com/omniful/go_commons/kafka"
 	"github.com/omniful/go_commons/pubsub"
 	"go.uber.org/zap"
@@ -33,10 +34,10 @@ func NewProducerWithConfig(topic string, brokers []string) *Producer {
 func (p *Producer) Emit(ctx context.Context, key string, event any) error {
 	value, err := json.Marshal(event)
 	if err != nil {
-		p.logger.Errorf("failed to marshal event: %v", err)
+		p.logger.Errorf(i18n.Translate(ctx, "failed to marshal event: %v"), err)
 		return err
 	}
-	p.logger.Infof("Publishing to topic=%s, key=%s, value=%s", p.topic, key, string(value))
+	p.logger.Infof(i18n.Translate(ctx, "Publishing to topic=%s, key=%s, value=%s"), p.topic, key, string(value))
 
 	msg := &pubsub.Message{
 		Topic:   p.topic,
@@ -45,7 +46,7 @@ func (p *Producer) Emit(ctx context.Context, key string, event any) error {
 		Headers: map[string]string{"source": "oms"},
 	}
 
-	p.logger.Infof("Publishing to topic=%s, key=%s", p.topic, key)
+	p.logger.Infof(i18n.Translate(ctx, "Publishing to topic=%s, key=%s"), p.topic, key)
 	return p.client.Publish(ctx, msg)
 }
 

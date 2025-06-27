@@ -6,9 +6,10 @@ server:
   idle_timeout: 70s
 
 interservice_client:
-   serviceName: ims-service
-   baseURL:     http://localhost:8000
-   timeout:     5s
+  serviceName: ims-service
+  baseURL: http://localhost:8000
+  timeout: 5s
+  auth_token: my-secret-token
 
 aws:
   region: "us-east-1"

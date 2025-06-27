@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/omniful/go_commons/i18n"
 	"github.com/omniful/go_commons/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,6 +29,6 @@ func ConnectMongoDB(ctx context.Context, uri string) error {
 		return err
 	}
 
-	log.Infof("Connected to MongoDB")
+	log.Infof(i18n.Translate(ctx, "Connected to MongoDB"))
 	return nil
 }
